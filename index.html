@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Account Handling — Next Steps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161A22;
+    --ink-soft:#3C4451;
+    --paper:#F6F5F1;
+    --panel:#FFFFFF;
+    --line:#DFDDD3;
+    --line-soft:#EAE8DF;
+    --accent:#2F6F5E;
+    --accent-soft:#E4EFEA;
+    --accent-ink:#173C32;
+    --warn:#B9791F;
+    --warn-soft:#FBF0DD;
+    --danger:#AE3B45;
+    --danger-soft:#F8E7E5;
+    --info:#3766A6;
+    --info-soft:#E7EEF7;
+    --gold:#C79A3D;
+    --radius:10px;
+    --shadow: 0 1px 2px rgba(22,26,34,.04), 0 8px 24px -12px rgba(22,26,34,.18);
+    --font-display: 'Fraunces', serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  ::selection{background:var(--accent-soft); color:var(--accent-ink);}
+
+  a{color:var(--accent-ink);}
+
+  /* ---------- Shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    min-height:100vh;
+  }
+  @media (max-width: 860px){
+    .shell{grid-template-columns: 1fr;}
+    .rail{position:static; height:auto; order:2;}
+    .main{order:1;}
+  }
+
+  /* ---------- Rail ---------- */
+  .rail{
+    background:var(--ink);
+    color:#EDEBE3;
+    padding:28px 24px 24px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:2px;
+  }
+  .brand-mark{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--gold);
+    border:1px solid rgba(199,154,61,.5);
+    padding:2px 6px;
+    border-radius:4px;
+  }
+  .rail h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:22px;
+    line-height:1.2;
+    margin:10px 0 2px;
+    color:#fff;
+  }
+  .rail .sub{
+    font-size:12.5px;
+    color:#A9AEBD;
+    margin-bottom:26px;
+  }
+
+  .stepper{
+    list-style:none;
+    margin:0 0 22px;
+    padding:0;
+    border-top:1px solid rgba(237,235,227,.12);
+  }
+  .stepper li{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:12px 0;
+    border-bottom:1px solid rgba(237,235,227,.12);
+    font-size:13px;
+    color:#8B90A0;
+  }
+  .stepper li .dot{
+    flex:0 0 auto;
+    width:20px; height:20px;
+    border-radius:50%;
+    border:1.5px solid #52586A;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    margin-top:1px;
+  }
+  .stepper li.done .dot{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .stepper li.active{color:#fff;}
+  .stepper li.active .dot{border-color:var(--gold); color:var(--gold);}
+  .stepper li .label small{display:block; color:#767C8C; font-size:11px; margin-top:1px;}
+
+  .rail-foot{margin-top:auto; padding-top:18px;}
+  .rail-links{list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .rail-links a, .rail-links button{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-body);
+    font-size:12.5px;
+    color:#D8D6CC;
+    text-decoration:none;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(237,235,227,.1);
+    padding:9px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    width:100%;
+    text-align:left;
+  }
+  .rail-links a:hover, .rail-links button:hover{background:rgba(255,255,255,.09); color:#fff;}
+  .rail-tag{font-family:var(--font-mono); font-size:10px; color:#767C8C; text-transform:uppercase; letter-spacing:.1em; margin:14px 0 4px;}
+
+  .ticket-id{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:#767C8C;
+    border-top:1px solid rgba(237,235,227,.12);
+    padding-top:12px;
+    margin-top:14px;
+  }
+  .ticket-id b{color:#C9CDD8; font-weight:500;}
+
+  /* ---------- Main ---------- */
+  .main{padding:44px 48px 90px; max-width:840px;}
+  @media (max-width:640px){ .main{padding:28px 20px 70px;} }
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--accent-ink);
+    background:var(--accent-soft);
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:5px;
+    margin-bottom:14px;
+  }
+  h2.screen-title{
+    font-family:var(--font-display);
+    font-size:30px;
+    font-weight:600;
+    margin:0 0 10px;
+    letter-spacing:-.01em;
+  }
+  p.screen-desc{color:var(--ink-soft); font-size:15px; max-width:56ch; margin:0 0 30px;}
+
+  /* Field styling */
+  .field{margin-bottom:20px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .field .hint{font-size:12px; color:#8A8F9C; margin-top:5px;}
+  input[type=text]{
+    width:100%;
+    font-family:var(--font-mono);
+    font-size:14.5px;
+    padding:12px 14px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    background:var(--panel);
+    color:var(--ink);
+  }
+  input[type=text]:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent);}
+  input[type=text]::placeholder{color:#B7B4A8; font-family:var(--font-body);}
+
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:560px){ .row2{grid-template-columns:1fr;} }
+
+  /* Option cards (choices) */
+  .options{display:flex; flex-direction:column; gap:10px; margin:6px 0 8px;}
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    text-align:left;
+    width:100%;
+    background:var(--panel);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    cursor:pointer;
+    font-family:var(--font-body);
+    transition: border-color .12s ease, transform .06s ease;
+  }
+  .opt:hover{border-color:var(--accent); transform:translateY(-1px);}
+  .opt .opt-num{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--gold);
+    border:1px solid #E4D6AE;
+    background:#FBF6EA;
+    border-radius:5px;
+    padding:2px 6px;
+    flex:0 0 auto;
+    margin-top:2px;
+  }
+  .opt .opt-title{font-weight:600; font-size:15px; color:var(--ink); margin-bottom:3px;}
+  .opt .opt-desc{font-size:13px; color:var(--ink-soft);}
+
+  .btnbar{display:flex; gap:12px; margin-top:28px; align-items:center;}
+  .btn{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:14px;
+    padding:12px 22px;
+    border-radius:8px;
+    border:1.5px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    cursor:pointer;
+  }
+  .btn.secondary{background:transparent; color:var(--ink); border-color:var(--line);}
+  .btn.secondary:hover{border-color:var(--ink);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-link{
+    background:none; border:none; color:var(--ink-soft); font-family:var(--font-body);
+    font-size:13.5px; cursor:pointer; text-decoration:underline; padding:4px 0;
+  }
+
+  /* Breadcrumb of chosen path */
+  .trail{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px;}
+  .crumb{
+    font-family:var(--font-mono); font-size:11px; color:var(--ink-soft);
+    background:var(--line-soft); border-radius:5px; padding:3px 8px;
+  }
+
+  /* Result screen */
+  .result-head{
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px;
+    margin-bottom:26px;
+  }
+  .accounts-summary{
+    display:flex; gap:22px; flex-wrap:wrap;
+    font-family:var(--font-mono); font-size:13px; color:var(--ink-soft);
+    margin-top:10px;
+  }
+  .accounts-summary b{color:var(--ink); font-weight:600;}
+
+  .step-card{
+    position:relative;
+    background:var(--panel);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px 18px 54px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow);
+  }
+  .step-card::before{
+    content:"";
+    position:absolute; left:0; top:10px; bottom:10px;
+    width:4px; border-radius:3px;
+    background:var(--accent);
+  }
+  .step-card.owner-t2::before{background:var(--info);}
+  .step-card .step-index{
+    position:absolute; left:18px; top:18px;
+    font-family:var(--font-mono); font-size:12px; color:#B7B4A8;
+  }
+  .step-card input[type=checkbox]{
+    position:absolute; left:20px; top:20px;
+    width:16px; height:16px;
+    accent-color:var(--accent);
+    cursor:pointer;
+  }
+  .step-card.checked{opacity:.55;}
+  .step-card.checked .step-title{text-decoration:line-through;}
+  .step-title{font-weight:600; font-size:15px; margin-bottom:3px;}
+  .step-body{font-size:13.5px; color:var(--ink-soft);}
+  .owner-tag{
+    display:inline-block;
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.05em;
+    text-transform:uppercase;
+    background:var(--accent-soft); color:var(--accent-ink);
+    border-radius:4px; padding:2px 7px; margin-bottom:8px;
+  }
+  .step-card.owner-t2 .owner-tag{background:var(--info-soft); color:var(--info);}
+
+  .callout{
+    border-radius:var(--radius);
+    padding:15px 18px;
+    font-size:13.5px;
+    margin:18px 0;
+    border:1.5px solid transparent;
+  }
+  .callout.warn{background:var(--warn-soft); border-color:#EFD9AC; color:#6E4E13;}
+  .callout.danger{background:var(--danger-soft); border-color:#E8C1C2; color:#7C2731;}
+  .callout.info{background:var(--info-soft); border-color:#C6D6EB; color:#264A76;}
+  .callout b{display:block; font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; font-family:var(--font-mono);}
+
+  .step-warns{margin-top:12px; display:flex; flex-direction:column; gap:8px;}
+  .step-warns .callout{margin:0; padding:11px 14px; font-size:12.5px;}
+
+  .reply-head{display:flex; align-items:center; justify-content:space-between; margin-top:4px;}
+  .copy-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--font-mono); font-size:11px; font-weight:600;
+    background:var(--panel); border:1.5px solid var(--line); color:var(--ink-soft);
+    padding:6px 10px; border-radius:6px; cursor:pointer;
+  }
+  .copy-btn:hover{border-color:var(--accent); color:var(--accent-ink);}
+  .copy-btn.copied{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-ink);}
+  .copy-btn svg{flex:0 0 auto;}
+
+  .kbd{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 4px;
+    font-family:var(--font-mono); font-size:10px; font-weight:600;
+    background:#F0EEE6; border:1px solid var(--line); border-radius:4px;
+    color:var(--ink-soft);
+  }
+  .opt .kbd{position:absolute; top:14px; right:14px;}
+  .opt{position:relative;}
+
+  .toolbar-row{display:flex; gap:10px; align-items:center; margin-bottom:2px;}
+  .kbd-hint{
+    font-family:var(--font-mono); font-size:11px; color:#9A9FAC;
+    margin-top:14px;
+  }
+  .kbd-hint .kbd{margin:0 2px;}
+
+
+  .forms-row{display:flex; gap:10px; flex-wrap:wrap; margin:20px 0 6px;}
+  .form-link{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-body); font-weight:600; font-size:13px;
+    color:var(--ink);
+    background:#fff; border:1.5px solid var(--gold);
+    padding:10px 14px; border-radius:8px; text-decoration:none;
+  }
+  .form-link:hover{background:#FBF6EA;}
+  .form-link svg{flex:0 0 auto;}
+
+  .reply-block{
+    background:#FBFAF6;
+    border:1px dashed var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+    white-space:pre-wrap;
+    margin:10px 0 18px;
+  }
+
+  /* Modal (reference panels) */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(20,22,28,.55);
+    display:none; align-items:center; justify-content:center;
+    padding:24px; z-index:50;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--panel);
+    border-radius:14px;
+    max-width:620px; width:100%;
+    max-height:82vh; overflow-y:auto;
+    padding:30px 32px 28px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal h3{font-family:var(--font-display); font-size:22px; margin:0 0 4px;}
+  .modal .modal-sub{color:var(--ink-soft); font-size:13px; margin-bottom:18px;}
+  .modal ul{padding-left:20px; font-size:13.5px; color:var(--ink-soft);}
+  .modal li{margin-bottom:8px;}
+  .modal-close{
+    float:right; background:none; border:none; font-size:20px; color:var(--ink-soft);
+    cursor:pointer; line-height:1;
+  }
+  .modal h4{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent-ink); font-family:var(--font-mono); margin:20px 0 8px;}
+  .modal.modal-wide{max-width:980px;}
+
+  /* Flowchart diagram */
+  .fc{display:flex; flex-direction:column; align-items:center; padding:6px 2px 4px;}
+  .fc-node{
+    background:var(--panel);
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    padding:12px 16px;
+    font-size:13px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    max-width:360px;
+  }
+  .fc-node b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.05em; font-family:var(--font-mono); color:var(--accent-ink); margin-bottom:3px;}
+  .fc-node.start{background:var(--ink); color:#fff; font-weight:600; font-family:var(--font-display); font-size:16px; border-color:var(--ink);}
+  .fc-node.merge{border-color:var(--gold); background:#FBF6EA;}
+  .fc-node.decision{border-color:var(--accent); background:var(--accent-soft); font-weight:600;}
+  .fc-node.t2{border-left:4px solid var(--info); text-align:left;}
+  .fc-node.t1{border-left:4px solid var(--accent); text-align:left;}
+  .fc-node.stop{border-color:var(--danger); background:var(--danger-soft); color:#7C2731; font-weight:600;}
+  .fc-node.route{border-color:var(--info); background:var(--info-soft); font-weight:600;}
+
+  .fc-arrow{color:#B7B4A8; font-size:20px; line-height:1; margin:4px 0;}
+  .fc-arrow.label::after{content:attr(data-label); display:block; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-soft); margin-top:2px;}
+
+  .fc-pair{display:flex; gap:22px; align-items:flex-start; justify-content:center; width:100%; margin:4px 0;}
+  .fc-col{display:flex; flex-direction:column; align-items:center; flex:1; max-width:380px;}
+
+  .fc-branches{display:flex; gap:16px; align-items:flex-start; justify-content:center; width:100%; margin-top:2px; flex-wrap:wrap;}
+  .fc-branch{
+    flex:1; min-width:230px; max-width:290px;
+    display:flex; flex-direction:column; align-items:center;
+    padding-top:14px;
+    border-top:2px solid var(--line);
+  }
+  .fc-branch-label{
+    font-family:var(--font-mono); font-size:11px; font-weight:600;
+    color:var(--ink); background:#F0EEE6; border-radius:6px;
+    padding:5px 10px; margin-bottom:10px; text-align:center;
+  }
+  .fc-branch .fc-node{width:100%;}
+
+  .fc-important{
+    margin-top:24px; width:100%;
+    border:1.5px solid #E8C1C2; background:var(--danger-soft); color:#7C2731;
+    border-radius:10px; padding:16px 20px; font-size:13px;
+  }
+  .fc-important b{display:block; font-family:var(--font-mono); font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px;}
+  .fc-important ul{margin:6px 0 0; padding-left:18px;}
+  .fc-important li{margin-bottom:5px;}
+
+  .fc-legend{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px; font-size:11.5px; color:var(--ink-soft);}
+  .fc-legend span{display:inline-flex; align-items:center; gap:6px;}
+  .fc-legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  .progress-note{
+    font-size:12px; color:#8A8F9C; margin-top:24px; font-family:var(--font-mono);
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ============ RAIL ============ -->
+  <nav class="rail">
+    <div>
+      <div class="brand"><span class="brand-mark">MAH</span></div>
+      <h1>Multi-Account<br>Handling</h1>
+      <div class="sub">Next-steps tool for Support &amp; Trust</div>
+
+      <ul class="stepper" id="stepper"></ul>
+    </div>
+
+    <div class="rail-foot">
+      <div class="rail-tag">Quick reference</div>
+      <ul class="rail-links">
+        <li><button onclick="openModal('flowchart')">📊 Email duplicate flowchart</button></li>
+        <li><button onclick="openModal('principles')">General principles</button></li>
+        <li><button onclick="openModal('access')">Can we even assist?</button></li>
+        <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSdfn_SYkAwhetj4UEEOVcv1IjTK6p5mWtkynylRlEc1VsGUDA/viewform" target="_blank" rel="noopener">Ban List Form ↗</a></li>
+        <li><a href="https://docs.google.com/spreadsheets/d/1GmSM29zsrwcKJHuEDw08-eyAQAc0CEVifz_q3pXlQJQ/edit?resourcekey=&gid=1922536103#gid=1922536103" target="_blank" rel="noopener">Refund Worksheet Form ↗</a></li>
+      </ul>
+      <div class="ticket-id" id="ticketSummary">No case started</div>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main" id="main"></main>
+</div>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modal-flowchart">
+  <div class="modal modal-wide">
+    <button class="modal-close" onclick="closeModal('flowchart')">&times;</button>
+    <h3>Account / Redemption Email Duplication</h3>
+    <div class="modal-sub">Scenario 1 — the full picture, redrawn from the SOP diagram. Use the wizard for step-by-step guidance; use this when you want to see how it all connects.</div>
+
+    <div class="fc-legend">
+      <span><i style="background:var(--accent)"></i>Tier 1 step</span>
+      <span><i style="background:var(--info)"></i>Tier 2 step</span>
+      <span><i style="background:var(--gold)"></i>Player action</span>
+      <span><i style="background:var(--danger)"></i>Stop / no support</span>
+    </div>
+
+    <div class="fc">
+      <div class="fc-node start">Player tries to bind an Account / Redemption Email — it's already linked elsewhere</div>
+      <div class="fc-arrow">↓</div>
+
+      <div class="fc-pair">
+        <div class="fc-col">
+          <div class="fc-node t1"><b>Tier 1 · Account 1</b>The account that contacted us</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t1">Agent responds using the provided script, and asks the player to log back into Account 2 to raise the request there</div>
+        </div>
+        <div class="fc-col">
+          <div class="fc-node merge"><b>Player · Account 2</b>Where the email is currently bound</div>
+        </div>
+      </div>
+
+      <div class="fc-arrow label" data-label="both paths land here">↓</div>
+      <div class="fc-node merge">Player raises the request from Account 2: <b style="font-family:inherit;text-transform:none;color:inherit;font-size:inherit">unbind the email from Acc 2, bind it to Acc 1</b></div>
+      <div class="fc-arrow">↓</div>
+      <div class="fc-node decision">Check KYC status of both accounts</div>
+
+      <div class="fc-branches">
+        <div class="fc-branch">
+          <div class="fc-branch-label">Acc 1 passed · Acc 2 not passed</div>
+          <div class="fc-node t1">Request a face-auth / KYC verification link for Acc 1</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t2">Once verified, Tier 2 unbinds the email from Acc 2 — it becomes a guest account</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t1">Respond to the player with the completion script</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t1">Ban Account 2 in <b style="font-family:inherit;text-transform:none;color:inherit;font-size:inherit">Auxiliary</b></div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t1">Fill up the refund sheet (if eligible) and the Ban List Form</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t1">Escalate to Tier 2 with a <b style="font-family:inherit;text-transform:none;color:inherit;font-size:inherit">new task</b> to ban the account — include the reason for account deletion</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node t2">Tier 2 deletes the account</div>
+        </div>
+
+        <div class="fc-branch">
+          <div class="fc-branch-label">Acc 1 not passed · Acc 2 passed</div>
+          <div class="fc-node route">Escalate to the FRA-KYC team</div>
+          <div class="fc-arrow">↓</div>
+          <div class="fc-node route">FRA-KYC follows the KYC multiple-account handling process from here</div>
+        </div>
+
+        <div class="fc-branch">
+          <div class="fc-branch-label">Both not passed / not triggered</div>
+          <div class="fc-node stop">Do not support unless Account 1 gets verified</div>
+        </div>
+      </div>
+
+      <div class="fc-important">
+        <b>⚠ Important — Redemption Email duplicates</b>
+        For Redemption Account duplicates specifically, check first whether the account has any Account Email bound.
+        <ul>
+          <li>If it doesn't, ask the player to bind an Account Email <b>before</b> they log out — otherwise they risk losing access to Account 1 later.</li>
+          <li>Everything else in this flow is identical to the Account Email duplicate process above.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-principles">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('principles')">&times;</button>
+    <h3>General principles</h3>
+    <div class="modal-sub">Every multi-account case, at heart, comes back to these.</div>
+    <ul>
+      <li>Each player is allowed <b>one account only</b>. We don't proactively hunt for duplicates — but once one surfaces, we act on it.</li>
+      <li>The goal: the player ends up with <b>exactly one account</b>, and dispute risk is minimized along the way.</li>
+      <li>Tell players plainly: one account per player, point them to the TOS clause if useful, and warn that repeat offenses can trigger an automatic system suspension.</li>
+      <li>We can only ever refund a player's <b>Purchase amount</b> — never the full balance, even if the balance is higher. Don't promise a full-balance refund.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-access">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('access')">&times;</button>
+    <h3>Can we even assist?</h3>
+    <div class="modal-sub">A player must contact us <b>from</b> the account they need help with. Check this before doing anything else.</div>
+    <ul>
+      <li><b>Can't log in, KYC not completed, no policy reason for the lockout:</b> we cannot assist — even if there's a balance or other assets on the account. Purchase receipts alone don't prove ownership.</li>
+      <li><b>Can't log in, but KYC is completed:</b> a Tier 2 agent can verify ownership via face authentication and support from there.</li>
+      <li><b>Can log in:</b> player should contact us from that account directly — assist as usual.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+
+const FORMS = {
+  ban: {label:"Ban List Form", url:"https://docs.google.com/forms/d/e/1FAIpQLSdfn_SYkAwhetj4UEEOVcv1IjTK6p5mWtkynylRlEc1VsGUDA/viewform"},
+  refund: {label:"Refund Worksheet Form", url:"https://docs.google.com/spreadsheets/d/1GmSM29zsrwcKJHuEDw08-eyAQAc0CEVifz_q3pXlQJQ/edit?resourcekey=&gid=1922536103#gid=1922536103"}
+};
+
+const REFUND_LIMIT_NOTE = {
+  type:"warn",
+  title:"Refund limit",
+  body:"We can only ever refund the player's Purchase amount — even if their balance is higher. Never tell the player we'll refund the full balance."
+};
+
+/* Case menu shown at Step 2 */
+const CASES = [
+  {
+    id:"email_dup",
+    title:"Email already linked to another account",
+    desc:"Player tries to bind an Account or Redemption Email to their current account, and the system says it's already linked elsewhere."
+  },
+  {
+    id:"same_app",
+    title:"Contacted from one account about a different account",
+    desc:"Player messages us from Account 1 but the issue actually belongs to Account 2 (same App ID)."
+  },
+  {
+    id:"kyc_flag",
+    title:"KYC team flagged multiple accounts",
+    desc:"The KYC team has surfaced a multi-account match and handed it to Support."
+  },
+  {
+    id:"self_exclusion",
+    title:"One account has a Take a Break / Self-Exclusion ban or freeze",
+    desc:"A newly found duplicate is tied to an account under Take a Break or self-exclusion."
+  },
+  {
+    id:"general",
+    title:"General duplicate account cleanup",
+    desc:"Guest accounts, extra registered accounts, promo-farming, or repeated delete-and-recreate behavior."
+  },
+  {
+    id:"small_refund",
+    title:"Player asking about balance from an already-deleted account",
+    desc:"Player is on their retained account, asking about the leftover balance from a deleted duplicate."
+  }
+];
+
+/* ===================== STATE ===================== */
+let state = {
+  acc1:"", acc2:"", acc1Enc:"",
+  screen:"accounts",      // accounts -> case -> (branch flow) -> result
+  caseId:null,
+  branchNodeId:null,
+  trail:[],                // human-readable breadcrumbs of answers
+  checked:{},
+  history:[]                // stack of prior {screen, caseId, branchNodeId, trail} snapshots
+};
+
+function snapshot(){
+  return {screen:state.screen, caseId:state.caseId, branchNodeId:state.branchNodeId, trail:[...state.trail]};
+}
+function pushHistory(){
+  state.history.push(snapshot());
+}
+function goBack(){
+  const prev = state.history.pop();
+  if(!prev) return;
+  state.screen = prev.screen;
+  state.caseId = prev.caseId;
+  state.branchNodeId = prev.branchNodeId;
+  state.trail = prev.trail;
+  render();
+}
+
+const STEP_LABELS = [
+  {key:"accounts", label:"Account info", sub:"UIDs & encrypted ID"},
+  {key:"case", label:"Case type", sub:"What's happening"},
+  {key:"branch", label:"Details", sub:"A couple of questions"},
+  {key:"result", label:"Next steps", sub:"Your action list"}
+];
+
+function stepIndexFor(screen){
+  if(screen==="accounts") return 0;
+  if(screen==="case") return 1;
+  if(screen==="result") return 3;
+  return 2; // any branch node
+}
+
+/* ===================== BRANCH TREES ===================== */
+/* Each tree: nodes keyed by id. type: 'question' | 'result' */
+
+const TREES = {
+/* ---------------- 1. EMAIL DUPLICATE ---------------- */
+email_dup: {
+  start: "stage",
+  nodes: {
+    stage: {
+      type:"question",
+      title:"Where is this case right now?",
+      desc:"Pick the stage that matches what's in front of you.",
+      options:[
+        {label:"Player just reported it from Account 1", sub:"First contact — email won't bind, system says it's linked elsewhere.", next:"emailtype"},
+        {label:"Player submitted a follow-up request from Account 2", sub:"They've included Account 1's UID and encrypted ID.", next:"kyc_table"},
+        {label:"Verification is complete — ready to unbind & rebind", sub:"Tier 2 action.", next:"result_unbind"},
+        {label:"Account 2 is confirmed for deletion — finalizing", sub:"Tier 1 wrap-up: ban, forms, handoff.", next:"result_finalize"},
+        {label:"Tier 2 has confirmed Account 2 deleted", sub:"Just need to close things out.", next:"result_closure"}
+      ]
+    },
+    emailtype: {
+      type:"question",
+      title:"Which email is duplicated?",
+      options:[
+        {label:"Account Email", sub:"The login/account-binding email.", next:"result_stage1_account"},
+        {label:"Redemption Email", sub:"The email used for redemptions.", next:"result_stage1_redemption"}
+      ]
+    },
+    result_stage1_account: {
+      type:"result",
+      title:"Tell the player how to resolve the Account Email conflict",
+      steps:[
+        {owner:"T1", title:"Confirm Account 1 has completed KYC", body:"KYC on Account 1 (the account they want to keep using) must be complete before anything else proceeds."},
+        {owner:"T1", title:"Send the player this exact guidance", body:null, reply:
+`To resolve the Account Email binding issue, please take the following steps:
+1. Ensure that the current account (Account 1) has completed KYC verification before proceeding.
+2. Log back into Account 2 (the account currently linked to the email you want to bind to Account 1).
+3. Submit a new support request from Account 2, including:
+   • The UID of Account 1 (the account you intend to bind the email to): {{ACC1}}
+   • A request to unbind the Account Email from Account 2 and re-bind it to Account 1.
+
+Note: Account 2 may be deleted after the process is completed.
+
+For smooth processing, please use the encrypted ID of Account 1 provided below when submitting the request from Account 2:
+{{ACC1ENC}}`},
+        {owner:"T1", title:"Wait for the follow-up ticket from Account 2", body:"Once it arrives with Account 1's UID and encrypted ID, come back to this tool and choose \"Player submitted a follow-up request from Account 2.\""}
+      ],
+      notes:[]
+    },
+    result_stage1_redemption: {
+      type:"result",
+      title:"Tell the player how to resolve the Redemption Email conflict",
+      steps:[
+        {owner:"T1", title:"Check whether Account 1 has a bound Account Email", body:"If not, they need to bind one first — otherwise they risk losing access to Account 1 later."},
+        {owner:"T1", title:"If no Account Email yet, send this first", body:null, reply:
+`To avoid being unable to log back into Account 1 later, please first bind an Account Email to Account 1. Only after completing the Account Email binding can you proceed to log into Account 2 for the next steps.`},
+        {owner:"T1", title:"Once Account 1 has an Account Email, send this", body:null, reply:
+`To unbind the Redemption Email from Account 2 (so you can bind it to Account 1 yourself later), please:
+1. Ensure that the current account (Account 1) has completed KYC verification before proceeding.
+2. Log back into Account 2 (the account currently linked to the Redemption Email you want to use for Account 1).
+3. Submit a support request from Account 2, including:
+   • The UID of Account 1 (the account you intend to bind the Redemption Email to): {{ACC1}}
+   • A request to unbind the Redemption Email from Account 2.
+
+Note: Account 2 may be deleted after the process is completed.
+
+For smooth follow-up processing, please use the Encrypted ID of Account 1 (provided below) when submitting the request from Account 2:
+{{ACC1ENC}}`},
+        {owner:"T1", title:"Wait for the follow-up ticket from Account 2", body:"Once it arrives with Account 1's UID and encrypted ID, come back to this tool and choose \"Player submitted a follow-up request from Account 2.\""}
+      ],
+      notes:[]
+    },
+    kyc_table: {
+      type:"question",
+      title:"What's the KYC status of each account?",
+      desc:"Account 1 is the one they want to keep; Account 2 is the one being unbound / deleted.",
+      options:[
+        {label:"Account 1: Not passed/not triggered  ·  Account 2: Passed", sub:"", next:"result_case_a"},
+        {label:"Account 1: Passed  ·  Account 2: Not passed/not triggered", sub:"", next:"result_case_b"},
+        {label:"Both: Not passed/not triggered", sub:"", next:"result_case_c"}
+      ]
+    },
+    result_case_a: {
+      type:"result",
+      title:"Route to the FRA-KYC team",
+      steps:[
+        {owner:"T1", title:"Transfer to the FRA-KYC team", body:"This case doesn't belong with the non-FRA KYC queue — hand it off."}
+      ],
+      notes:[
+        {type:"info", title:"Handled elsewhere from here", body:"FRA-KYC is a separate specialized team, not generic Tier 2 — once transferred, they follow the KYC multiple-account handling process on their side. There's nothing further for you to action on this ticket."}
+      ]
+    },
+    result_case_b: {
+      type:"result",
+      title:"Escalate to Tier 2 for verification and rebind",
+      steps:[
+        {owner:"T1", title:"Escalate to Tier 2", body:"Ask Tier 2 to request an Account 1 KYC verification link from the player."},
+        {owner:"T2", title:"Once verification is done, unbind and rebind", body:"Unbind the email from Account 2, then bind it to Account 1."},
+        {owner:"T2", title:"Inform the player the rebinding succeeded", body:""},
+        {owner:"T1", title:"Ban and delete Account 2", body:"This closes out the losing account once the rebind is confirmed."}
+      ],
+      notes:[]
+    },
+    result_case_c: {
+      type:"result",
+      title:"Do not proceed",
+      steps:[
+        {owner:"T1", title:"Hold the case", body:"We do not support this request unless Account 1 gets verified. Ask the player to complete KYC/verification on Account 1 first, then restart this flow."}
+      ],
+      notes:[]
+    },
+    result_unbind: {
+      type:"result",
+      title:"Tier 2 — Unbind & rebind, with the 10-minute wait",
+      steps:[
+        {owner:"T1", title:"Create a verification task for Account 1", body:"If KYC isn't complete, request a KYC ID verification link. If it is complete, request a Face Authentication link instead."},
+        {owner:"T1", title:"Once the player verifies, update the task", body:"Let Tier 2 know verification is complete, and ask them to review the result, unbind the email from Account 2, and re-bind it to Account 1."},
+        {owner:"T2", title:"Unbind the email from Account 2", body:"No additional verification is required for this step.", warns:[{type:"info", title:"Important", body:"Unbinding (Account 2) needs no verification. Re-binding (Account 1) does."}]},
+        {owner:"T2", title:"Wait 10 minutes before rebinding", body:"The system needs this window to process the \"Pending\" status. Track it in the shared spreadsheet — don't rebind early."},
+        {owner:"T2", title:"Re-bind the email to Account 1", body:"This step does require verification, which should already be complete."},
+        {owner:"T2", title:"Notify the player via Account 2", body:null, reply:
+`Your Account Email has been successfully re-bound to Account 1 ({{ACC1}}). You can now log into Account 1 using this email.
+
+This Account 2 ({{ACC2}}) will be deleted shortly.`}
+      ],
+      notes:[]
+    },
+    result_finalize: {
+      type:"result",
+      title:"Tier 1 — Finalize Account 2 deletion",
+      steps:[
+        {owner:"T1", title:"Ban Account 2 in Auxiliary", body:"Do this once the player confirms deletion, or if there's simply no response."},
+        {owner:"T1", title:"Fill out the Ban List Form", body:"Part of the standard account-deletion paperwork.", form:"ban"},
+        {owner:"T1", title:"Check Account 2's balance", body:"If it's greater than 0.5 SC, fill out the Refund Worksheet to process the refund of the remaining balance.", form:"refund", warns:[
+          REFUND_LIMIT_NOTE,
+          {type:"info", title:"FRA-KYC balance handling", body:"If balance < deposit amount, the payments team refunds the balance. If balance > deposit amount, payments first refunds the Purchase amount, then the difference (Balance − Purchase) is transferred to the retained account via in-game message, deducted from the unretained account."}
+        ]},
+        {owner:"T1", title:"Escalate to Tier 2 with a new task to ban Account 2", body:"This is a separate ban from the Auxiliary one above — make sure the task includes the reason for the account deletion."},
+        {owner:"T2", title:"Tier 2 deletes Account 2", body:"The final step, once their ban and your refund/Ban List submission are both done."}
+      ],
+      notes:[]
+    },
+    result_closure: {
+      type:"result",
+      title:"Case closed",
+      steps:[
+        {owner:"T1", title:"No further action needed", body:"Nothing further is required from Account 1. The issue is fully resolved once Tier 2 confirms Account 2's deletion."}
+      ],
+      notes:[]
+    }
+  }
+},
+
+/* ---------------- 2. SAME APP ID ---------------- */
+same_app: {
+  start: "keep",
+  nodes: {
+    keep: {
+      type:"question",
+      title:"Which account does the player want to keep?",
+      desc:"They contacted us from Account 1 about an issue that actually belongs to Account 2.",
+      options:[
+        {label:"Keep Account 1", sub:"They want to hold onto the account they contacted us from.", next:"result_keep1"},
+        {label:"Keep Account 2", sub:"They want the other account instead.", next:"result_keep2"}
+      ]
+    },
+    result_keep1: {
+      type:"result",
+      title:"Redirect to Account 2, confirm deletion of Account 2 later",
+      steps:[
+        {owner:"T1", title:"Tell the player multiple accounts aren't allowed", body:"They need to handle Account 2's issue from Account 2 directly."},
+        {owner:"T1", title:"Ask them to log into Account 2 and open a new ticket", body:"That new ticket is where Account 2's issue actually gets resolved."},
+        {owner:"T1", title:"In that new ticket, get written confirmation they want Account 2 deleted", body:"Since they're keeping Account 1, this is the record you need."}
+      ],
+      notes:[
+        {type:"danger", title:"Scope limit", body:"We cannot assist with anything related to Account 2 inside this current ticket."}
+      ]
+    },
+    result_keep2: {
+      type:"result",
+      title:"Confirm deletion of Account 1 in this ticket",
+      steps:[
+        {owner:"T1", title:"Tell the player multiple accounts aren't allowed", body:""},
+        {owner:"T1", title:"Get written confirmation in the current ticket that they want Account 1 deleted", body:"Since they're keeping Account 2, capture this confirmation here."}
+      ],
+      notes:[
+        {type:"danger", title:"Scope limit", body:"We cannot assist with anything related to Account 2 inside this current ticket — that still has to happen from Account 2 itself."}
+      ]
+    }
+  }
+},
+
+/* ---------------- 3. KYC FLAGGED ---------------- */
+kyc_flag: {
+  start:"dispute",
+  nodes:{
+    dispute:{
+      type:"question",
+      title:"Is any of the player's accounts involved in a dispute or fraud case?",
+      options:[
+        {label:"Yes", sub:"Any account, not just the flagged ones.", next:"result_chris"},
+        {label:"No", sub:"Clear to continue the standard flow.", next:"chosen"}
+      ]
+    },
+    result_chris:{
+      type:"result",
+      title:"Assign to Chris",
+      steps:[
+        {owner:"T1", title:"Assign the ticket to Chris for further handling", body:"Dispute or fraud involvement takes this out of the standard multi-account flow."}
+      ],
+      notes:[]
+    },
+    chosen:{
+      type:"question",
+      title:"Has the player chosen which account to keep?",
+      options:[
+        {label:"Yes, and it's active", sub:"Double-checked and confirmed active.", next:"purchase_amt"},
+        {label:"Not yet", sub:"Need to get that decision first.", next:"result_need_choice"}
+      ]
+    },
+    result_need_choice:{
+      type:"result",
+      title:"Get the player's decision first",
+      steps:[
+        {owner:"T1", title:"Ask the player to choose one account to keep", body:"Once they've chosen, double-check that account is active, then restart this branch."}
+      ],
+      notes:[]
+    },
+    purchase_amt:{
+      type:"question",
+      title:"Is the player's total purchase amount $500 or above?",
+      options:[
+        {label:"Yes — $500+", sub:"High-value case.", next:"result_high_value"},
+        {label:"No", sub:"Standard handling applies.", next:"result_kyc_standard"}
+      ]
+    },
+    result_high_value:{
+      type:"result",
+      title:"Discuss separately before final handling",
+      steps:[
+        {owner:"T1", title:"Do not finalize yet", body:"For players with $500+ in total purchases, the case needs to be discussed separately before you proceed to final handling. Raise it with your lead/Tier 2 first."}
+      ],
+      notes:[]
+    },
+    result_kyc_standard:{
+      type:"result",
+      title:"Ban, refund, and confirm — standard KYC multi-account handling",
+      steps:[
+        {owner:"T1", title:"Ban every account being deleted, in the backend", body:""},
+        {owner:"T1", title:"Add each to the Ban List Form", body:"", form:"ban"},
+        {owner:"T1", title:"Check each deleted account's balance (played + unplayed SC)", body:"If it's greater than 0.5 SC, fill out the Refund Worksheet.", form:"refund", warns:[
+          REFUND_LIMIT_NOTE,
+          {type:"info", title:"FRA-KYC balance handling", body:"If balance < deposit amount, the payments team refunds the balance. If balance > deposit amount, payments first refunds the Purchase amount, then the difference (Balance − Purchase) is transferred to the retained account via in-game message, deducted from the unretained account."}
+        ]},
+        {owner:"T1", title:"Respond to the KYC task", body:"Confirm which account is kept and which are deleted, and confirm the refund worksheet is complete if a refund was needed."},
+        {owner:"T1", title:"Send ban notifications by email", body:""},
+        {owner:"T1", title:"Request device bans from the project team", body:"Device bans currently have to be requested there, not actioned directly."},
+        {owner:"T1", title:"Update the player", body:"Cover account status, refund status, and the retained account's KYC status."}
+      ],
+      notes:[
+        {type:"info", title:"Then — Tier 2 process", body:"Tier 2 submits the account deletions, checks the Ban List for refund accuracy (this feeds Quality audit), deletes all listed accounts in the system, then replies and closes the task confirming resolution."}
+      ]
+    }
+  }
+},
+
+/* ---------------- 4. SELF-EXCLUSION ---------------- */
+self_exclusion: {
+  start:"ensured",
+  nodes:{
+    ensured:{
+      type:"question",
+      title:"Is self-exclusion ensured on the player's current account in RSG Backend?",
+      options:[
+        {label:"Yes, it's ensured", sub:"", next:"result_flow"},
+        {label:"No / not shown as ensured", sub:"", next:"result_ensure_first"}
+      ]
+    },
+    result_ensure_first:{
+      type:"result",
+      title:"Escalate immediately to get self-exclusion ensured",
+      steps:[
+        {owner:"T1", title:"Submit a Tier 2 task right away", body:"Use the corresponding task category to request that Tier 2 ensure self-exclusion on the current account before anything else proceeds."}
+      ],
+      notes:[
+        {type:"danger", title:"Do this first", body:"Don't move on to the standard flow until self-exclusion is confirmed ensured on the current account.", top:true}
+      ]
+    },
+    result_flow:{
+      type:"result",
+      title:"Freeze, refund (if due), ban — and close with an internal note",
+      steps:[
+        {owner:"T1", title:"Do not approve the KYC", body:""},
+        {owner:"T1", title:"Freeze the current account immediately", body:""},
+        {owner:"T1", title:"Reply to the player", body:null, reply:
+`You must wait until the Take a Break / self-exclusion period on your other account ends before playing again.
+
+Please don't create new accounts in the meantime — doing so will result in the same action being taken: refund of balance and account ban.`},
+        {owner:"T1", title:"Checking the end date? Handle very long periods carefully", body:"Confirm the actual end date in the backend, but if it's extremely long (e.g. over 30 years), don't state the exact date to the player — it can come across as needlessly harsh."},
+        {owner:"T1", title:"After the player has read the message: check balance", body:"If the current account balance is greater than 0.5 SC, fill out the Refund Worksheet Form. If it's 0.5 SC or less, don't reveal the refund balance to the player.", form:"refund", warns:[REFUND_LIMIT_NOTE]},
+        {owner:"T1", title:"Add the player to the Ban List Form", body:"", form:"ban"},
+        {owner:"T1", title:"Ban the current account in the backend", body:""},
+        {owner:"T1", title:"Resolve the task and leave an internal note", body:null, reply:
+`Player has another account with Take a Break / self-exclusion restriction. Current account has been frozen → refunded (if applicable) → banned accordingly.`}
+      ],
+      notes:[]
+    }
+  }
+},
+
+/* ---------------- 5. GENERAL CLEANUP ---------------- */
+general: {
+  start:"kind",
+  nodes:{
+    kind:{
+      type:"question",
+      title:"What's the situation?",
+      options:[
+        {label:"Other accounts are guest accounts only", sub:"No registered duplicates, just guest sessions.", next:"result_guest"},
+        {label:"Player has other registered accounts", sub:"Real, logged-in duplicate accounts exist.", next:"result_registered_intro"},
+        {label:"Player is farming many small accounts for promos", sub:"Exploit pattern, not a normal duplicate.", next:"result_promo"},
+        {label:"Player repeatedly deletes and recreates accounts", sub:"", next:"repeat_count"}
+      ]
+    },
+    result_guest:{
+      type:"result",
+      title:"No action needed",
+      steps:[
+        {owner:"T1", title:"Treat this as a non-issue", body:"Guest-only accounts don't count as duplicates for this process."}
+      ],
+      notes:[]
+    },
+    result_registered_intro:{
+      type:"question",
+      title:"For the accounts being given up — what's on them?",
+      desc:"The player must choose one account to keep. This question covers the others.",
+      options:[
+        {label:"Balance or a pending redemption", sub:"", next:"result_registered_balance"},
+        {label:"Significant losses or dispute risk", sub:"", next:"result_registered_risk"}
+      ]
+    },
+    result_registered_balance:{
+      type:"result",
+      title:"Process a refund on the accounts being given up",
+      steps:[
+        {owner:"T1", title:"Have the player confirm which single account they're keeping", body:""},
+        {owner:"T1", title:"Process a refund for balance or pending redemption on the other account(s)", body:"", form:"refund", warns:[REFUND_LIMIT_NOTE]}
+      ],
+      notes:[]
+    },
+    result_registered_risk:{
+      type:"result",
+      title:"Decide: ban, or ask the player to delete (escalated)",
+      steps:[
+        {owner:"T1", title:"Weigh purchase history and dispute potential", body:"Use this to decide between the two options below."},
+        {owner:"T1", title:"Option A — Ban the account", body:"Appropriate where risk is high enough to act directly."},
+        {owner:"T1", title:"Option B — Escalate to Tier 2 to have the player delete the extra account", body:"Your action here is the escalation itself — Tier 2 handles the deletion request from there."}
+      ],
+      notes:[]
+    },
+    result_promo:{
+      type:"result",
+      title:"Ban immediately",
+      steps:[
+        {owner:"T1", title:"Apply an account ban", body:""},
+        {owner:"T1", title:"Apply a device ban", body:"Both go on immediately together — this is an exploit pattern, not a standard duplicate."}
+      ],
+      notes:[]
+    },
+    repeat_count:{
+      type:"question",
+      title:"Is this the first time, or has it happened before?",
+      options:[
+        {label:"First occurrence", sub:"", next:"result_repeat_first"},
+        {label:"Repeated behavior", sub:"", next:"result_repeat_again"}
+      ]
+    },
+    result_repeat_first:{
+      type:"result",
+      title:"Issue a warning",
+      steps:[
+        {owner:"T1", title:"Warn the player and advise them to stop", body:"No account action yet on a first occurrence."}
+      ],
+      notes:[]
+    },
+    result_repeat_again:{
+      type:"result",
+      title:"Proceed with an account ban",
+      steps:[
+        {owner:"T1", title:"Ban the account", body:"The warning stage has already passed."}
+      ],
+      notes:[]
+    }
+  }
+},
+
+/* ---------------- 6. SMALL REFUND VIA RETAINED ACCOUNT ---------------- */
+small_refund: {
+  start:"authorized",
+  nodes:{
+    authorized:{
+      type:"question",
+      title:"Has the Payment Team explicitly authorized this in the Refund Worksheet?",
+      desc:"They must have stated, in writing, in the Refund Worksheet, that Tier 1 may compensate this in the retained account.",
+      options:[
+        {label:"Yes, clearly stated in the Refund Worksheet", sub:"", next:"result_send_gift"},
+        {label:"No / not stated", sub:"", next:"result_no_merge"}
+      ]
+    },
+    result_send_gift:{
+      type:"result",
+      title:"Send the balance as an in-game gift",
+      steps:[
+        {owner:"T1", title:"Send the eligible balance as a Gift of unplayed SC", body:"Use a New Ingame Message with the template below.", reply:
+`Title: Deleted Account Remaining Balance
+
+Content:
+Dear Player,
+
+Thank you for choosing to keep this account active! As you selected this account, we've transferred the remaining SC from your deleted account to it. Please do not create multiple accounts in the future. We appreciate your continued support.`}
+      ],
+      notes:[
+        {type:"danger", title:"Hard limit", body:"Under no circumstances may Tier 1 — or any agent — assist with account balance merging outside of this explicitly authorized, Payment-Team-instructed flow.", top:true}
+      ]
+    },
+    result_no_merge:{
+      type:"result",
+      title:"Do not action this",
+      steps:[
+        {owner:"T1", title:"Don't send any compensation", body:"Without explicit Payment Team authorization in the Refund Worksheet, this can't be actioned."}
+      ],
+      notes:[
+        {type:"danger", title:"Hard limit", body:"Under no circumstances may Tier 1 — or any agent — assist with account balance merging.", top:true}
+      ]
+    }
+  }
+}
+};
+
+/* ===================== RENDER HELPERS ===================== */
+const $main = document.getElementById('main');
+
+function render(){
+  renderStepper();
+  renderTicketSummary();
+  if(state.screen === "accounts") return renderAccounts();
+  if(state.screen === "case") return renderCase();
+  if(state.screen === "result") return renderResult();
+  return renderBranchNode();
+}
+
+function renderStepper(){
+  const idx = stepIndexFor(state.screen);
+  const ul = document.getElementById('stepper');
+  ul.innerHTML = STEP_LABELS.map((s,i)=>{
+    const cls = i<idx ? "done" : (i===idx ? "active" : "");
+    const dotContent = i<idx ? "✓" : (i+1);
+    return `<li class="${cls}"><span class="dot">${dotContent}</span><span class="label">${s.label}<small>${s.sub}</small></span></li>`;
+  }).join('');
+}
+
+function renderTicketSummary(){
+  const el = document.getElementById('ticketSummary');
+  if(!state.acc1){ el.textContent = "No case started"; return; }
+  el.innerHTML = `<b>Acc 1</b> ${escapeHtml(state.acc1)}${state.acc2? `<br><b>Acc 2</b> ${escapeHtml(state.acc2)}`:''}${state.acc1Enc? `<br><b>Acc 1 Enc.</b> ${escapeHtml(state.acc1Enc)}`:''}`;
+}
+
+function fillTemplate(str){
+  if(!str) return str;
+  const acc1 = state.acc1 && state.acc1.trim() ? state.acc1.trim() : "[Account 1 ID]";
+  const acc2 = state.acc2 && state.acc2.trim() ? state.acc2.trim() : "[Account 2 ID]";
+  const acc1enc = state.acc1Enc && state.acc1Enc.trim() ? state.acc1Enc.trim() : "[Insert Account 1's Encrypted ID Here]";
+  return str.split("{{ACC1ENC}}").join(acc1enc)
+            .split("{{ACC1}}").join(acc1)
+            .split("{{ACC2}}").join(acc2);
+}
+
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- Screen: Account entry ---------- */
+function renderAccounts(){
+  $main.innerHTML = `
+    <div class="eyebrow">Step 1</div>
+    <h2 class="screen-title">Which accounts are involved?</h2>
+    <p class="screen-desc">Enter what you have on hand. Account 2 is optional if you don't have it yet — you can still move forward.</p>
+
+    <div class="row2">
+      <div class="field">
+        <label for="acc1">Account 1 — current / contacting account</label>
+        <input type="text" id="acc1" placeholder="e.g. UID-208831 or player handle" value="${escapeHtml(state.acc1)}">
+      </div>
+      <div class="field">
+        <label for="acc2">Account 2 — other account (optional)</label>
+        <input type="text" id="acc2" placeholder="e.g. UID-119042" value="${escapeHtml(state.acc2)}">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="acc1Enc">Account 1 — encrypted ID (optional)</label>
+      <input type="text" id="acc1Enc" placeholder="Paste the encrypted ID if you have it" value="${escapeHtml(state.acc1Enc)}">
+      <div class="hint">Only needed for email-rebind cases — it gets dropped straight into the player-facing reply if you fill it in.</div>
+    </div>
+
+    <div class="btnbar">
+      <button class="btn" id="toCase">Continue</button>
+    </div>
+  `;
+  document.getElementById('acc1').addEventListener('input', e=> state.acc1 = e.target.value);
+  document.getElementById('acc2').addEventListener('input', e=> state.acc2 = e.target.value);
+  document.getElementById('acc1Enc').addEventListener('input', e=> state.acc1Enc = e.target.value);
+  $main.querySelectorAll('input[type=text]').forEach(inp=>{
+    inp.addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('toCase').click(); }
+    });
+  });
+  document.getElementById('toCase').addEventListener('click', ()=>{
+    pushHistory();
+    state.screen = "case";
+    render();
+  });
+  document.getElementById('acc1').focus({preventScroll:true});
+}
+
+/* ---------- Screen: Case picker ---------- */
+function renderCase(){
+  $main.innerHTML = `
+    <div class="eyebrow">Step 2</div>
+    <h2 class="screen-title">What's the case?</h2>
+    <p class="screen-desc">Pick the option that best matches what the player or the KYC team has reported.</p>
+
+    <div class="options" id="caseOptions"></div>
+
+    <div class="btnbar">
+      <button class="btn secondary" id="back1">Back</button>
+    </div>
+    <div class="kbd-hint">Press <span class="kbd">1</span>–<span class="kbd">6</span> to pick · <span class="kbd">⌫</span> to go back</div>
+  `;
+  const wrap = document.getElementById('caseOptions');
+  CASES.forEach((c,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-num">${String(i+1).padStart(2,'0')}</span><span><span class="opt-title">${c.title}</span><span class="opt-desc">${c.desc}</span></span><span class="kbd">${i+1}</span>`;
+    btn.addEventListener('click', ()=>{
+      pushHistory();
+      state.caseId = c.id;
+      state.trail = [c.title];
+      state.branchNodeId = TREES[c.id].start;
+      state.screen = "branch";
+      state.checked = {};
+      render();
+    });
+    wrap.appendChild(btn);
+  });
+  document.getElementById('back1').addEventListener('click', goBack);
+}
+
+/* ---------- Screen: Branch question node ---------- */
+function renderBranchNode(){
+  const tree = TREES[state.caseId];
+  const node = tree.nodes[state.branchNodeId];
+
+  if(node.type === "result"){
+    state.screen = "result";
+    return renderResult();
+  }
+
+  $main.innerHTML = `
+    <div class="eyebrow">Step 3</div>
+    <div class="trail" id="trail"></div>
+    <h2 class="screen-title">${node.title}</h2>
+    ${node.desc? `<p class="screen-desc">${node.desc}</p>` : '<div style="height:8px"></div>'}
+    <div class="options" id="branchOptions"></div>
+    <div class="btnbar">
+      <button class="btn secondary" id="backBranch">Back</button>
+    </div>
+    <div class="kbd-hint">Press <span class="kbd">1</span>–<span class="kbd">${node.options.length}</span> to pick · <span class="kbd">⌫</span> to go back</div>
+  `;
+  renderTrail();
+  const wrap = document.getElementById('branchOptions');
+  node.options.forEach((o,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-num">${String(i+1).padStart(2,'0')}</span><span><span class="opt-title">${o.label}</span>${o.sub? `<span class="opt-desc">${o.sub}</span>`:''}</span><span class="kbd">${i+1}</span>`;
+    btn.addEventListener('click', ()=>{
+      pushHistory();
+      state.trail.push(o.label);
+      const nextNode = tree.nodes[o.next];
+      state.branchNodeId = o.next;
+      if(nextNode.type === "result"){
+        state.screen = "result";
+      }
+      render();
+    });
+    wrap.appendChild(btn);
+  });
+  document.getElementById('backBranch').addEventListener('click', goBack);
+}
+
+function renderTrail(){
+  const el = document.getElementById('trail');
+  if(!el) return;
+  el.innerHTML = state.trail.map(t=>`<span class="crumb">${escapeHtml(t)}</span>`).join('<span class="crumb" style="background:transparent;color:#B7B4A8;padding:3px 0">→</span>');
+}
+
+/* ---------- Screen: Result ---------- */
+function renderResult(){
+  const tree = TREES[state.caseId];
+  const node = tree.nodes[state.branchNodeId];
+
+  const allNotes = node.notes||[];
+  const topNotes = allNotes.filter(n=> n.top || n.type === "danger");
+  const bottomNotes = allNotes.filter(n=> !(n.top || n.type === "danger"));
+
+  const topNotesHtml = topNotes.map(n=>`<div class="callout ${n.type}"><b>${n.title}</b>${n.body}</div>`).join('');
+  const bottomNotesHtml = bottomNotes.map(n=>`<div class="callout ${n.type}"><b>${n.title}</b>${n.body}</div>`).join('');
+
+  const stepsHtml = node.steps.map((s,i)=>{
+    const ownerClass = s.owner === "T2" ? "owner-t2" : "";
+    const checkId = `chk_${i}`;
+    const isChecked = !!state.checked[checkId];
+    const replyId = `reply_${i}`;
+    const warnsHtml = (s.warns||[]).map(w=>`<div class="callout ${w.type}"><b>${w.title}</b>${w.body}</div>`).join('');
+    return `
+      <div class="step-card ${ownerClass} ${isChecked?'checked':''}" data-chk="${checkId}">
+        <input type="checkbox" ${isChecked?'checked':''} data-chk="${checkId}">
+        <div class="owner-tag">${s.owner === 'T2' ? 'Tier 2' : 'Tier 1'}</div>
+        <div class="step-title">${s.title}</div>
+        ${s.body ? `<div class="step-body">${s.body}</div>` : ''}
+        ${s.reply ? `
+          <div class="reply-block" id="${replyId}">${escapeHtml(fillTemplate(s.reply))}</div>
+          <div class="reply-head">
+            <button class="copy-btn" data-copy-target="${replyId}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy reply
+            </button>
+          </div>` : ''}
+        ${s.form ? renderFormLink(s.form) : ''}
+        ${warnsHtml ? `<div class="step-warns">${warnsHtml}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  $main.innerHTML = `
+    <div class="eyebrow">Next steps</div>
+    <div class="trail" id="trail"></div>
+    <div class="result-head">
+      <h2 class="screen-title">${node.title}</h2>
+      <div class="accounts-summary">
+        <span><b>Account 1</b> ${escapeHtml(state.acc1) || '—'}</span>
+        ${state.acc2 ? `<span><b>Account 2</b> ${escapeHtml(state.acc2)}</span>` : ''}
+      </div>
+    </div>
+
+    ${topNotesHtml}
+    ${stepsHtml}
+    ${bottomNotesHtml}
+
+    <div class="btnbar">
+      <button class="btn secondary" id="backResult">Back</button>
+      <button class="btn secondary" id="copyAll">Copy full checklist</button>
+      <button class="btn secondary" id="restart">Start a new case</button>
+    </div>
+    <div class="progress-note">${Object.values(state.checked).filter(Boolean).length} of ${node.steps.length} steps checked off</div>
+  `;
+  renderTrail();
+
+  $main.querySelectorAll('input[type=checkbox][data-chk]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      state.checked[cb.dataset.chk] = cb.checked;
+      render();
+    });
+  });
+
+  $main.querySelectorAll('.copy-btn[data-copy-target]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const el = document.getElementById(btn.dataset.copyTarget);
+      copyText(el.innerText, btn, 'Copy reply');
+    });
+  });
+
+  document.getElementById('copyAll').addEventListener('click', ()=>{
+    const lines = [`${node.title}`, ''];
+    node.steps.forEach((s,i)=>{
+      lines.push(`${i+1}. [${s.owner === 'T2' ? 'Tier 2' : 'Tier 1'}] ${s.title}`);
+      if(s.body) lines.push(`   ${s.body}`);
+      if(s.reply) lines.push(`   ---\n   ${fillTemplate(s.reply).split('\n').join('\n   ')}\n   ---`);
+    });
+    if(bottomNotes.length || topNotes.length){
+      lines.push('');
+      [...topNotes, ...bottomNotes].forEach(n=> lines.push(`⚠ ${n.title}: ${n.body}`));
+    }
+    copyText(lines.join('\n'), document.getElementById('copyAll'), 'Copy full checklist');
+  });
+
+  document.getElementById('backResult').addEventListener('click', goBack);
+  document.getElementById('restart').addEventListener('click', ()=>{
+    state = {acc1:state.acc1, acc2:state.acc2, acc1Enc:state.acc1Enc, screen:"case", caseId:null, branchNodeId:null, trail:[], checked:{}, history:[]};
+    render();
+  });
+}
+
+function copyText(text, btn, resetLabel){
+  navigator.clipboard.writeText(text).then(()=>{
+    const original = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.textContent = "Copied ✓";
+    setTimeout(()=>{
+      btn.classList.remove('copied');
+      btn.innerHTML = original;
+    }, 1500);
+  }).catch(()=>{});
+}
+
+function renderFormLink(key){
+  const f = FORMS[key];
+  if(!f) return '';
+  return `<div class="forms-row"><a class="form-link" href="${f.url}" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v7H3V3h7"/></svg>
+    ${f.label}
+  </a></div>`;
+}
+
+/* ---------- Modals ---------- */
+function openModal(id){ document.getElementById('modal-'+id).classList.add('open'); }
+function closeModal(id){ document.getElementById('modal-'+id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m=>{
+  m.addEventListener('click', e=>{ if(e.target === m) m.classList.remove('open'); });
+});
+
+/* ---------- Keyboard shortcuts ---------- */
+document.addEventListener('keydown', (e)=>{
+  const tag = (e.target.tagName || '').toLowerCase();
+  const typing = tag === 'input' || tag === 'textarea';
+
+  // Escape closes any open modal
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.modal-backdrop.open').forEach(m=> m.classList.remove('open'));
+    return;
+  }
+
+  if(typing) return; // don't hijack typing in account fields
+
+  // Number keys select the nth visible option on case/branch screens
+  if(/^[1-9]$/.test(e.key)){
+    const opts = $main.querySelectorAll('.options .opt');
+    const idx = parseInt(e.key, 10) - 1;
+    if(opts[idx]){ e.preventDefault(); opts[idx].click(); }
+    return;
+  }
+
+  // Backspace goes back a step (skip when a modal is open)
+  if(e.key === 'Backspace' && !document.querySelector('.modal-backdrop.open')){
+    const backBtn = document.getElementById('backBranch') || document.getElementById('back1') || document.getElementById('backResult');
+    if(backBtn){ e.preventDefault(); backBtn.click(); }
+    return;
+  }
+});
+
+/* ===================== INIT ===================== */
+render();
+</script>
+</body>
+</html>
